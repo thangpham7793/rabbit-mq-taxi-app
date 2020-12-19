@@ -45,21 +45,21 @@
     {
       "user": "cc-admin",
       "vhost": "cc-dev-vhost",
-      "exchange": "",
+      "exchange": ".*",
       "write": ".*",
       "read": ".*"
     },
     {
       "user": "cc-dev",
       "vhost": "cc-dev-vhost",
-      "exchange": "",
+      "exchange": ".*",
       "write": ".*",
       "read": ".*"
     },
     {
       "user": "cc-admin",
       "vhost": "/",
-      "exchange": "",
+      "exchange": ".*",
       "write": ".*",
       "read": ".*"
     }
