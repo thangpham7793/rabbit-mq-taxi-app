@@ -1,0 +1,79 @@
+{
+  "rabbit_version": "3.8.9",
+  "rabbitmq_version": "3.8.9",
+  "product_name": "RabbitMQ",
+  "product_version": "3.8.9",
+  "users": [
+    {
+      "name": "cc-admin",
+      "password_hash": "BsNdLRJ1xiaZKNHAIUdcWjP4axeXZ3SPnTMT/95xWHbifE44",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    },
+    {
+      "name": "cc-dev",
+      "password_hash": "5GFTN/nBjixfeI0PV7KkOVsJrScAKa4wiHKmMAr2njmOtvnV",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ""
+    }
+  ],
+  "vhosts": [{ "name": "cc-dev-vhost" }, { "name": "/" }],
+  "permissions": [
+    {
+      "user": "cc-dev",
+      "vhost": "cc-dev-vhost",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "cc-admin",
+      "vhost": "cc-dev-vhost",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "cc-admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "topic_permissions": [
+    {
+      "user": "cc-admin",
+      "vhost": "cc-dev-vhost",
+      "exchange": "",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "cc-dev",
+      "vhost": "cc-dev-vhost",
+      "exchange": "",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "cc-admin",
+      "vhost": "/",
+      "exchange": "",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "parameters": [],
+  "global_parameters": [
+    { "name": "cluster_name", "value": "rabbit@my-rabbit" },
+    {
+      "name": "internal_cluster_id",
+      "value": "rabbitmq-cluster-id-9Btbavt8tpuO4I3RgHjsKQ"
+    }
+  ],
+  "policies": [],
+  "queues": [],
+  "exchanges": [],
+  "bindings": []
+}

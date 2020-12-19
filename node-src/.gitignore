@@ -2,3 +2,5 @@ node_modules
 npm-debug.log
 dist
 envs
+rabbitmq/data
+rabbitmq/logs

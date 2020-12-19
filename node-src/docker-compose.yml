@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    container_name: msg-broker
+    image: rabbitmq:3-management # this will activate the management UI by default
+    hostname: my-rabbit
+    volumes:
+      - ./rabbitmq/etc/definitions.json:/etc/rabbitmq/definitions.json
+      - ./rabbitmq/data:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit
+      - ./rabbitmq/logs:/var/log/rabbitmq/log 
+    env_file: 
+      - envs/.rabbitmq.env
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - 'rabbitmq'
+
+networks:
+  rabbitmq:
