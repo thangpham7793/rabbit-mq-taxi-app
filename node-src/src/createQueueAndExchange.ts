@@ -1,8 +1,8 @@
+/* eslint-disable no-undef */
+import amqp from "amqplib"
 import dotenv from "dotenv"
 dotenv.config()
-/* eslint-disable no-undef */
 import { appConfig } from "./config"
-import amqp from "amqplib"
 
 type TaxiQueueAndExchange = {
   taxiName: string
@@ -10,11 +10,11 @@ type TaxiQueueAndExchange = {
 }
 
 export async function init({ taxiName, taxiExchange }: TaxiQueueAndExchange) {
-  const conn = await amqp.connect(appConfig.rabbitmqURI)
+  const conn = await amqp.connect(appConfig.rabbitmqURI as string)
   const channel = await conn.createChannel()
-  const queue = await channel.assertQueue(taxiName, { durable: false })
+  const queue = await channel.assertQueue(taxiName, { durable: true })
   const exchange = await channel.assertExchange(taxiExchange, "direct", {
-    durable: false,
+    durable: true,
     autoDelete: true,
   })
   await channel.bindQueue(queue.queue, exchange.exchange, taxiName)
