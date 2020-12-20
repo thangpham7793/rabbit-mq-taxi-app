@@ -20,6 +20,7 @@
   "scripts": {
     "dev": "docker-compose up -d && tsc -w",
     "stop": "docker-compose down",
-    "lint": "yarn eslint src/*.ts"
+    "lint": "yarn eslint src/*.ts",
+    "restart-container": "docker-compose down && docker-compose up -d"
   }
 }

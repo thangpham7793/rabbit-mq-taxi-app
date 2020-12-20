@@ -5,5 +5,7 @@ function processOrder(payload: ConsumeMessage | null) {
 }
 
 export async function taxiSubscribe({ channel, queue }: OrderTaxiProp) {
-  await channel.consume(queue.queue, processOrder)
+  await channel.consume(queue.queue, processOrder, {
+    noAck: true,
+  })
 }

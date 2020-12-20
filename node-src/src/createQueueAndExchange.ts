@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
+import { appConfig } from "./config"
 import amqp from "amqplib"
-import dotenv from "dotenv"
-dotenv.config()
 
 type TaxiQueueAndExchange = {
   taxiName: string
@@ -9,11 +8,11 @@ type TaxiQueueAndExchange = {
 }
 
 export async function init({ taxiName, taxiExchange }: TaxiQueueAndExchange) {
-  const conn = await amqp.connect(process.env.RABBITMQ_URI as string)
+  const conn = await amqp.connect(appConfig.rabbitmqURI)
   const channel = await conn.createChannel()
-  const queue = await channel.assertQueue(taxiName, { durable: true })
+  const queue = await channel.assertQueue(taxiName, { durable: false })
   const exchange = await channel.assertExchange(taxiExchange, "direct", {
-    durable: true,
+    durable: false,
     autoDelete: true,
   })
   await channel.bindQueue(queue.queue, exchange.exchange, taxiName)
