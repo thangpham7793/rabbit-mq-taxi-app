@@ -3,12 +3,18 @@ import { init } from "./createQueueAndExchange"
 import { orderTaxi } from "./publisher"
 
 async function main() {
-  const { channel, exchange, queue } = await init({
-    taxiName: "taxi",
+  const taxiOneConfig = await init({
+    taxiName: "taxi-1",
     taxiExchange: "taxi-direct",
   })
-  await taxiSubscribe({ channel, queue, exchange })
-  await orderTaxi({ channel, queue, exchange })
+  const taxiTwoConfig = await init({
+    taxiName: "taxi-2",
+    taxiExchange: "taxi-direct",
+  })
+  await taxiSubscribe(taxiOneConfig)
+  await orderTaxi(taxiOneConfig)
+  await taxiSubscribe(taxiTwoConfig)
+  await orderTaxi(taxiTwoConfig)
 }
 
 main()

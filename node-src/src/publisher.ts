@@ -30,7 +30,9 @@ export async function orderTaxi({ channel, queue, exchange }: OrderTaxiProp) {
       channel.publish(
         exchange.exchange,
         queue.queue,
-        Buffer.from(new OrderTaxiMessage("get me a taxi").toString())
+        Buffer.from(
+          new OrderTaxiMessage(`Sending to taxi ${queue.queue}`).toString()
+        )
       ),
     5000
   )
