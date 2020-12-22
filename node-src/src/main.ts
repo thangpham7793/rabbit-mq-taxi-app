@@ -7,13 +7,15 @@ async function main() {
     taxiName: "taxi-1",
     taxiExchange: "taxi-direct",
   })
+
   const taxiTwoConfig = await init({
     taxiName: "taxi-2",
     taxiExchange: "taxi-direct",
   })
+
   await taxiSubscribe(taxiOneConfig)
-  await orderTaxi(taxiOneConfig)
   await taxiSubscribe(taxiTwoConfig)
+  await orderTaxi(taxiOneConfig)
   await orderTaxi(taxiTwoConfig)
 }
 
