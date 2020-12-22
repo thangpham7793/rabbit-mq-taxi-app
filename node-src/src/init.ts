@@ -1,3 +1,4 @@
+import { ExchangeTypes } from "./ExchangeTypes"
 import amqp from "amqplib"
 import { declareQueue } from "./declareQueue"
 
@@ -20,19 +21,18 @@ export async function init({
   exchangeType,
 }: TaxiQueueAndExchange) {
   const queue = await declareQueue({ channel, taxiName })
-  const directExchange = await channel.assertExchange(
-    exchangeName,
-    exchangeType,
-    {
-      durable: true,
-      autoDelete: true,
-    }
-  )
-  await channel.bindQueue(queue.queue, directExchange.exchange, taxiName)
+  const exchange = await channel.assertExchange(exchangeName, exchangeType, {
+    durable: true,
+    autoDelete: true,
+  })
+
+  if (exchangeType === ExchangeTypes.DIRECT) {
+    await channel.bindQueue(queue.queue, exchange.exchange, taxiName)
+  }
 
   return {
     channel,
     queue,
-    directExchange,
+    exchange,
   }
 }
