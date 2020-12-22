@@ -21,6 +21,7 @@
     "dev": "docker-compose up -d && tsc -w",
     "stop": "docker-compose down",
     "lint": "yarn eslint src/*.ts",
+    "start": "node dist/main.js",
     "restart-container": "docker-compose down && docker-compose up -d"
   }
 }

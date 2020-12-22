@@ -10,16 +10,12 @@ export type OrderTaxiProp = {
 }
 
 class OrderTaxiMessage {
-  private messageId: string
-
   constructor(public message: string) {
     this.message = message
-    this.messageId = uuidv4()
   }
 
   toString() {
     return JSON.stringify({
-      messageId: this.messageId,
       message: this.message,
     })
   }
@@ -30,12 +26,14 @@ export async function orderTaxi({ channel, queue, exchange }: OrderTaxiProp) {
   const taxiQueue = await declareQueue({ channel, taxiName: queue.queue })
   setInterval(
     () =>
+      // server-push to reduce load as opposed to front-end polling
       channel.publish(
         exchange.exchange,
         taxiQueue.queue,
         Buffer.from(
           new OrderTaxiMessage(`Sending to taxi ${queue.queue}`).toString()
-        )
+        ),
+        { messageId: uuidv4(), persistent: true }
       ),
     2000
   )
