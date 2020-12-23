@@ -1,11 +1,5 @@
 import { ExchangeTypes, TaxiQueueAndExchange } from "./types.dt"
-import amqp from "amqplib"
 import { declareQueue } from "./declareQueue"
-
-export async function getChannel(rabbitmqURI: string) {
-  const conn = await amqp.connect(rabbitmqURI)
-  return await conn.createChannel()
-}
 
 export async function initTopicQueue({
   channel,
