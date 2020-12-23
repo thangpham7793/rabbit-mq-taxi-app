@@ -1,47 +1,92 @@
 /* eslint-disable no-undef */
-import { appConfig } from "./config"
 import { taxiSubscribeByTopic, taxiSubscribeDirect } from "./consumer"
 import { getChannel } from "./getChannel"
-import { initDirectExchange } from "./initDirectExchange"
+import { initDirectQueue } from "./initDirectQueue"
 import { orderTaxiByTopic, orderTaxiDirect } from "./publisher"
-import { initTopicExchange } from "./initTopicExchange"
+import { initTopicQueue } from "./initTopicQueue"
+import { appConfig } from "./config"
+import { getExchange } from "./getExchange"
+import { ExchangeTypes } from "./types.dt"
 
 async function main() {
   const channel = await getChannel(appConfig.rabbitmqURI)
 
-  const taxiOneConfig = await initDirectExchange({
+  const directExchange = await getExchange({
+    channel,
+    name: "taxi-direct",
+    type: ExchangeTypes.DIRECT,
+  })
+
+  const taxiOneQueue = await initDirectQueue({
     channel,
     taxiName: "taxi-1",
-    exchangeName: "taxi-direct",
+    exchange: directExchange,
   })
 
-  const taxiTwoConfig = await initDirectExchange({
+  const taxiTwoQueue = await initDirectQueue({
     channel,
     taxiName: "taxi-2",
-    exchangeName: "taxi-direct",
+    exchange: directExchange,
   })
 
-  const taxiThreeConfig = await initTopicExchange({
+  const ecoExchange = await getExchange({
+    channel,
+    name: "taxi.eco",
+    type: ExchangeTypes.TOPIC,
+  })
+
+  const taxiThreeQueue = await initTopicQueue({
     channel,
     taxiName: "taxi-3",
-    exchangeName: "taxi.eco",
+    exchange: ecoExchange,
   })
 
-  const taxiFourConfig = await initTopicExchange({
+  const taxiFourQueue = await initTopicQueue({
     channel,
     taxiName: "taxi-4",
-    exchangeName: "taxi.eco",
+    exchange: ecoExchange,
   })
 
-  await taxiSubscribeDirect({ ...taxiOneConfig, channel })
-  await taxiSubscribeDirect({ ...taxiTwoConfig, channel })
+  await taxiSubscribeDirect({
+    channel,
+    exchange: directExchange,
+    queue: taxiOneQueue,
+  })
+  await taxiSubscribeDirect({
+    channel,
+    exchange: directExchange,
+    queue: taxiTwoQueue,
+  })
 
-  await taxiSubscribeByTopic({ ...taxiThreeConfig, channel, key: "eco" })
-  await taxiSubscribeByTopic({ ...taxiFourConfig, channel, key: "eco" })
+  await taxiSubscribeByTopic({
+    channel,
+    exchange: ecoExchange,
+    queue: taxiThreeQueue,
+    key: "eco",
+  })
+  await taxiSubscribeByTopic({
+    channel,
+    exchange: ecoExchange,
+    queue: taxiFourQueue,
+    key: "eco",
+  })
 
-  await orderTaxiDirect({ ...taxiOneConfig, channel })
-  await orderTaxiDirect({ ...taxiTwoConfig, channel })
-  await orderTaxiByTopic({ ...taxiThreeConfig, channel, key: "eco" })
+  await orderTaxiDirect({
+    channel,
+    exchange: directExchange,
+    queue: taxiOneQueue,
+  })
+  await orderTaxiDirect({
+    channel,
+    exchange: directExchange,
+    queue: taxiTwoQueue,
+  })
+  await orderTaxiByTopic({
+    channel,
+    exchange: ecoExchange,
+    queue: taxiThreeQueue,
+    key: "eco",
+  })
 }
 
 main()
