@@ -1,50 +1,47 @@
 /* eslint-disable no-undef */
 import { appConfig } from "./config"
 import { taxiSubscribeByTopic, taxiSubscribeDirect } from "./consumer"
-import { ExchangeTypes } from "./ExchangeTypes"
 import { getChannel } from "./getChannel"
-import { init } from "./init"
+import { initDirectExchange } from "./initDirectExchange"
 import { orderTaxiByTopic, orderTaxiDirect } from "./publisher"
+import { initTopicExchange } from "./initTopicExchange"
 
 async function main() {
   const channel = await getChannel(appConfig.rabbitmqURI)
 
-  const taxiOneConfig = await init({
+  const taxiOneConfig = await initDirectExchange({
     channel,
     taxiName: "taxi-1",
     exchangeName: "taxi-direct",
-    exchangeType: ExchangeTypes.DIRECT,
   })
 
-  const taxiTwoConfig = await init({
+  const taxiTwoConfig = await initDirectExchange({
     channel,
     taxiName: "taxi-2",
     exchangeName: "taxi-direct",
-    exchangeType: ExchangeTypes.DIRECT,
   })
 
-  const taxiThreeConfig = await init({
+  const taxiThreeConfig = await initTopicExchange({
     channel,
     taxiName: "taxi-3",
     exchangeName: "taxi.eco",
-    exchangeType: ExchangeTypes.TOPIC,
   })
 
-  const taxiFourConfig = await init({
+  const taxiFourConfig = await initTopicExchange({
     channel,
     taxiName: "taxi-4",
     exchangeName: "taxi.eco",
-    exchangeType: ExchangeTypes.TOPIC,
   })
 
-  await taxiSubscribeDirect(taxiOneConfig)
-  await taxiSubscribeDirect(taxiTwoConfig)
-  await taxiSubscribeByTopic({ ...taxiThreeConfig, key: "eco" })
-  await taxiSubscribeByTopic({ ...taxiFourConfig, key: "eco" })
+  await taxiSubscribeDirect({ ...taxiOneConfig, channel })
+  await taxiSubscribeDirect({ ...taxiTwoConfig, channel })
 
-  await orderTaxiDirect(taxiOneConfig)
-  await orderTaxiDirect(taxiTwoConfig)
-  await orderTaxiByTopic({ ...taxiThreeConfig, key: "eco" })
+  await taxiSubscribeByTopic({ ...taxiThreeConfig, channel, key: "eco" })
+  await taxiSubscribeByTopic({ ...taxiFourConfig, channel, key: "eco" })
+
+  await orderTaxiDirect({ ...taxiOneConfig, channel })
+  await orderTaxiDirect({ ...taxiTwoConfig, channel })
+  await orderTaxiByTopic({ ...taxiThreeConfig, channel, key: "eco" })
 }
 
 main()

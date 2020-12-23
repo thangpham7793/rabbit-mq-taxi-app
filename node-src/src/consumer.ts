@@ -36,9 +36,7 @@ export async function taxiSubscribeByTopic({
       channel.nack(message)
     }
   }
-
   await channel.bindQueue(queue.queue, exchange.exchange, key)
-
   await channel.consume(queue.queue, processOrder, {
     noAck: false,
   })
