@@ -39,7 +39,7 @@ export async function orderTaxiDirect({
     : console.error(`Failed to to publish new direct order`)
 }
 
-export async function orderTaxiByTopic({
+export function orderTaxiByTopic({
   channel,
   key,
   exchange,
