@@ -3,6 +3,7 @@ import amqp from "amqplib"
 export enum ExchangeTypes {
   "DIRECT" = "direct",
   "TOPIC" = "topic",
+  "FANOUT" = "fanout",
 }
 
 interface BaseProps {

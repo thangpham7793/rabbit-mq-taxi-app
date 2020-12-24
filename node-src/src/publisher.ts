@@ -19,7 +19,6 @@ export async function orderTaxiDirect({
   queue,
   exchange,
 }: OrderTaxiDirectProp) {
-  console.log(`Sending to queue ${queue.queue}`)
   // re-declare to make sure queue exists (idempotent action)
   const taxiQueue = (await declareQueue({ channel, taxiName: queue.queue }))
     .queue
