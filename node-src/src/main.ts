@@ -1,12 +1,11 @@
 /* eslint-disable no-undef */
 import { taxiSubscribeByTopic, taxiSubscribeDirect } from "./consumer"
 import { getChannel } from "./getChannel"
-import { initDirectQueue } from "./initDirectQueue"
 import { orderTaxiByTopic, orderTaxiDirect } from "./publisher"
-import { initTopicQueue } from "./initTopicQueue"
 import { appConfig } from "./config"
 import { getExchange } from "./getExchange"
 import { ExchangeTypes } from "./types.dt"
+import { declareQueue } from "./declareQueue"
 
 async function main() {
   const channel = await getChannel(appConfig.rabbitmqURI)
@@ -17,13 +16,7 @@ async function main() {
   })
 
   const directQueues = await Promise.all(
-    ["taxi-1", "taxi-2"].map((taxiName) =>
-      initDirectQueue({
-        channel,
-        taxiName,
-        exchange: directExchange,
-      })
-    )
+    ["taxi-1", "taxi-2"].map((taxiName) => declareQueue({ channel, taxiName }))
   )
 
   await Promise.all(
@@ -54,13 +47,7 @@ async function main() {
   })
 
   const ecoTopicQueues = await Promise.all(
-    ["taxi-3", "taxi-4"].map((taxiName) =>
-      initTopicQueue({
-        channel,
-        taxiName,
-        exchange: ecoExchange,
-      })
-    )
+    ["taxi-3", "taxi-4"].map((taxiName) => declareQueue({ channel, taxiName }))
   )
 
   await Promise.all(

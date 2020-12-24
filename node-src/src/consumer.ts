@@ -1,9 +1,10 @@
 import { ConsumeMessage } from "amqplib"
-import { OrderTaxiDirectProp, OrderTaxiByTopicProp } from "./publisher"
+import { OrderTaxiDirectProp, SubscribeByTopicProps } from "./types.dt"
 
 export async function taxiSubscribeDirect({
   channel,
   queue,
+  exchange,
 }: OrderTaxiDirectProp) {
   function processOrder(message: ConsumeMessage | null) {
     if (!message) return
@@ -15,6 +16,8 @@ export async function taxiSubscribeDirect({
       channel.nack(message)
     }
   }
+
+  await channel.bindQueue(queue.queue, exchange.exchange, queue.queue)
   await channel.consume(queue.queue, processOrder, {
     noAck: false,
   })
@@ -25,7 +28,7 @@ export async function taxiSubscribeByTopic({
   key,
   exchange,
   queue,
-}: OrderTaxiByTopicProp) {
+}: SubscribeByTopicProps) {
   function processOrder(message: ConsumeMessage | null) {
     if (!message) return
     try {

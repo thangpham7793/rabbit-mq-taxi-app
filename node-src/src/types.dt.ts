@@ -20,6 +20,15 @@ export type GetExchangeProps = {
   type: ExchangeTypes
 }
 
+export type SubscribeByTopicProps = BaseProps & {
+  queue: amqp.Replies.AssertQueue
+  key: string
+}
+
+export type SubscribeDirectProps = BaseProps & {
+  queue: amqp.Replies.AssertQueue
+}
+
 export type OrderTaxiDirectProp = BaseProps & {
   queue: amqp.Replies.AssertQueue
 }
