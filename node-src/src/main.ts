@@ -10,83 +10,79 @@ import { ExchangeTypes } from "./types.dt"
 
 async function main() {
   const channel = await getChannel(appConfig.rabbitmqURI)
-
   const directExchange = await getExchange({
     channel,
-    name: "taxi-direct",
+    name: "taxi",
     type: ExchangeTypes.DIRECT,
   })
 
-  const taxiOneQueue = await initDirectQueue({
-    channel,
-    taxiName: "taxi-1",
-    exchange: directExchange,
-  })
+  const directQueues = await Promise.all(
+    ["taxi-1", "taxi-2"].map((taxiName) =>
+      initDirectQueue({
+        channel,
+        taxiName,
+        exchange: directExchange,
+      })
+    )
+  )
 
-  const taxiTwoQueue = await initDirectQueue({
-    channel,
-    taxiName: "taxi-2",
-    exchange: directExchange,
-  })
+  await Promise.all(
+    directQueues.map((queue) =>
+      taxiSubscribeDirect({
+        channel,
+        exchange: directExchange,
+        queue,
+      })
+    )
+  )
 
+  await Promise.all(
+    directQueues.map((queue) =>
+      orderTaxiDirect({
+        channel,
+        exchange: directExchange,
+        queue,
+      })
+    )
+  )
+
+  // seems like individual direct queue is not needed in this situation
   const ecoExchange = await getExchange({
     channel,
-    name: "taxi.eco",
+    name: "taxi-topic",
     type: ExchangeTypes.TOPIC,
   })
 
-  const taxiThreeQueue = await initTopicQueue({
-    channel,
-    taxiName: "taxi-3",
-    exchange: ecoExchange,
-  })
+  const ecoTopicQueues = await Promise.all(
+    ["taxi-3", "taxi-4"].map((taxiName) =>
+      initTopicQueue({
+        channel,
+        taxiName,
+        exchange: ecoExchange,
+      })
+    )
+  )
 
-  const taxiFourQueue = await initTopicQueue({
-    channel,
-    taxiName: "taxi-4",
-    exchange: ecoExchange,
-  })
-
-  await taxiSubscribeDirect({
-    channel,
-    exchange: directExchange,
-    queue: taxiOneQueue,
-  })
-  await taxiSubscribeDirect({
-    channel,
-    exchange: directExchange,
-    queue: taxiTwoQueue,
-  })
-
-  await taxiSubscribeByTopic({
-    channel,
-    exchange: ecoExchange,
-    queue: taxiThreeQueue,
-    key: "eco",
-  })
-  await taxiSubscribeByTopic({
-    channel,
-    exchange: ecoExchange,
-    queue: taxiFourQueue,
-    key: "eco",
-  })
-
-  await orderTaxiDirect({
-    channel,
-    exchange: directExchange,
-    queue: taxiOneQueue,
-  })
-  await orderTaxiDirect({
-    channel,
-    exchange: directExchange,
-    queue: taxiTwoQueue,
-  })
-  await orderTaxiByTopic({
-    channel,
-    exchange: ecoExchange,
-    queue: taxiThreeQueue,
-    key: "eco",
-  })
+  await Promise.all(
+    ecoTopicQueues.map((queue) =>
+      taxiSubscribeByTopic({
+        channel,
+        queue,
+        exchange: ecoExchange,
+        key: "taxi.#.eco.#", // receive "taxi" and "taxi.eco"
+      })
+    )
+  )
+  const keys = ["taxi", "taxi.eco", "taxi.luxury", "taxi.luxury.eco"]
+  await Promise.all(
+    keys.map((key) =>
+      orderTaxiByTopic({
+        channel,
+        exchange: ecoExchange,
+        key,
+      })
+    )
+  )
 }
 
-main()
+main().catch((error: NodeJS.ErrnoException) => console.error(error.message))

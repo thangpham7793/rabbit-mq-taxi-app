@@ -5,14 +5,25 @@ export enum ExchangeTypes {
   "TOPIC" = "topic",
 }
 
-export type TaxiQueueAndExchange = {
+interface BaseProps {
   channel: amqp.Channel
-  taxiName: string
   exchange: amqp.Replies.AssertExchange
+}
+
+export type TaxiQueueAndExchange = BaseProps & {
+  taxiName: string
 }
 
 export type GetExchangeProps = {
   channel: amqp.Channel
   name: string
   type: ExchangeTypes
+}
+
+export type OrderTaxiDirectProp = BaseProps & {
+  queue: amqp.Replies.AssertQueue
+}
+
+export type OrderTaxiByTopicProp = BaseProps & {
+  key: string
 }

@@ -3,15 +3,17 @@ import amqp from "amqplib"
 
 function gracefulShutdown(conn: amqp.Connection) {
   process.on("SIGTERM", async () => {
-    await conn.close()
-    console.log(`Exit gracefully`)
-    process.exit(0)
+    await conn.close().then(() => {
+      console.log(`Exit gracefully`)
+      process.exit(0)
+    })
   })
 
   process.on("SIGINT", async () => {
-    await conn.close()
-    console.log(`Exit gracefully`)
-    process.exit(0)
+    await conn.close().then(() => {
+      console.log(`Exit gracefully`)
+      process.exit(0)
+    })
   })
 }
 
