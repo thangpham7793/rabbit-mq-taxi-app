@@ -4,6 +4,7 @@ import v1Router from "./apiVersions/v1Router"
 
 const app = express()
 
+app.use(express.json())
 app.use("/v1", v1Router)
 
 app.listen(appConfig.PORT, () => {
