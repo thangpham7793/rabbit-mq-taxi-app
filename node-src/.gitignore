@@ -4,5 +4,6 @@ yarn-error.log
 dist
 envs
 */.env
+.env
 rabbitmq/data
 rabbitmq/logs

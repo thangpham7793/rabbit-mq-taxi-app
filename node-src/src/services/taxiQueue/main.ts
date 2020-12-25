@@ -7,7 +7,7 @@ import {
 } from "./consumer"
 import { getChannel } from "./getChannel"
 import { orderTaxiByTopic, orderTaxiDirect } from "./publisher"
-import { appConfig } from "./config"
+import { appConfig } from "../../config"
 import { getExchange } from "./getExchange"
 import { ExchangeTypes } from "./types.dt"
 import { declareQueue } from "./declareQueue"

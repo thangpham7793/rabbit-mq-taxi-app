@@ -1,11 +1,10 @@
 import { appConfig } from "./config"
-import express, { Request, Response } from "express"
+import express from "express"
+import v1Router from "./apiVersions/v1Router"
 
 const app = express()
 
-app.get("/taxi", (_: Request, res: Response) => {
-  res.status(200)
-})
+app.use("/v1", v1Router)
 
 app.listen(appConfig.PORT, () => {
   console.log(`Taxi Server Listening On ${appConfig.PORT}`)
