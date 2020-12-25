@@ -7,4 +7,5 @@ dotenv.config({
 
 export const appConfig = {
   rabbitmqURI: process.env.RABBITMQ_URI as string,
+  PORT: process.env.PORT || 3000,
 }

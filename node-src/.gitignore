@@ -3,5 +3,6 @@ npm-debug.log
 yarn-error.log
 dist
 envs
+*/.env
 rabbitmq/data
 rabbitmq/logs
