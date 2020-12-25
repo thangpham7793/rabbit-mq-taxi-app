@@ -21,5 +21,7 @@ export async function getChannel(rabbitmqURI: string) {
   const conn = await amqp.connect(rabbitmqURI)
 
   gracefulShutdown(conn)
-  return await conn.createChannel()
+  const channel = await conn.createChannel()
+  await channel.prefetch(1)
+  return channel
 }

@@ -14,37 +14,32 @@ import { declareQueue } from "./declareQueue"
 
 async function main() {
   const channel = await getChannel(appConfig.rabbitmqURI)
-  const basicTaxis = ["taxi-1", "taxi-2"]
-  const echoTaxis = ["taxi-3", "taxi-4"]
-  const generalAnouncementQueues = [
-    "taxi-1-GA",
-    "taxi-2-GA",
-    "taxi-3-GA",
-    "taxi-4-GA",
-  ]
+  const taxis = ["taxi-1"]
   const fanoutExchange = await getExchange({
     channel,
     name: "general_anouncement",
     type: ExchangeTypes.FANOUT,
   })
-  generalAnouncementQueues.forEach((taxiName) =>
-    declareQueue({ channel, taxiName })
-      .then((queue: amqp.Replies.AssertQueue) => {
+
+  taxis.forEach((taxiName) =>
+    declareQueue({ channel, taxiName }).then(
+      (queue: amqp.Replies.AssertQueue) => {
         console.log(`Created queue ${queue.queue}`)
         taxiSubscribeFanout({
           channel,
           exchange: fanoutExchange,
           queue,
         })
-      })
-      .then(() => {
-        channel.publish(
-          fanoutExchange.exchange,
-          "",
-          Buffer.from("Hello from CC Headquarter!")
-        )
-      })
+      }
+    )
   )
+  ;(function () {
+    channel.publish(
+      fanoutExchange.exchange,
+      "",
+      Buffer.from("Hello from CC Headquarter!")
+    )
+  })()
 
   const directExchange = await getExchange({
     channel,
@@ -53,7 +48,7 @@ async function main() {
   })
 
   const directQueues = await Promise.all(
-    basicTaxis.map((taxiName) => declareQueue({ channel, taxiName }))
+    taxis.map((taxiName) => declareQueue({ channel, taxiName }))
   )
 
   await Promise.all(
@@ -83,7 +78,7 @@ async function main() {
   })
 
   const ecoTopicQueues = await Promise.all(
-    echoTaxis.map((taxiName) => declareQueue({ channel, taxiName }))
+    taxis.map((taxiName) => declareQueue({ channel, taxiName }))
   )
 
   await Promise.all(
@@ -105,6 +100,8 @@ async function main() {
       key,
     })
   )
+
+  await channel.unbindQueue("taxi-1", fanoutExchange.exchange, "")
 }
 
 main().catch((error: NodeJS.ErrnoException) => console.error(error.message))
