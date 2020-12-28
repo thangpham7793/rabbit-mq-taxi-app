@@ -18,7 +18,9 @@ async function main() {
     name: "general_anouncement",
     type: ExchangeTypes.FANOUT,
   })
-  const policy = { messageTtl: 604800000, deadLetterExchange: "taxi-dlx" }
+  const DLQ = "taxi-dlq"
+  const DLX = "taxi-dlx"
+  const policy = { messageTtl: 604800000, deadLetterExchange: DLX }
 
   const taxis = ["taxi.1"]
   taxis.forEach((queueName) =>
@@ -117,8 +119,6 @@ async function main() {
   )
 
   // dead-letter-exchange and queue for expired messages
-  const DLQ = "taxi-dlq"
-  const DLX = "taxi-dlx"
   const deadLetterExchange = await getExchange({
     channel,
     name: DLX,

@@ -20,6 +20,13 @@
   "vhosts": [{ "name": "cc-dev-vhost" }, { "name": "/" }],
   "permissions": [
     {
+      "user": "cc-admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
       "user": "cc-dev",
       "vhost": "cc-dev-vhost",
       "configure": ".*",
@@ -29,13 +36,6 @@
     {
       "user": "cc-admin",
       "vhost": "cc-dev-vhost",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    },
-    {
-      "user": "cc-admin",
-      "vhost": "/",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
@@ -72,8 +72,67 @@
       "value": "rabbitmq-cluster-id-9Btbavt8tpuO4I3RgHjsKQ"
     }
   ],
-  "policies": [],
-  "queues": [],
-  "exchanges": [],
-  "bindings": []
+  "policies": [
+    {
+      "vhost": "cc-dev-vhost",
+      "name": "Q_TTL_DLX",
+      "pattern": "taxi\\.\\d+",
+      "apply-to": "queues",
+      "definition": {
+        "dead-letter-exchange": "taxi-dlx",
+        "message-ttl": 604800000
+      },
+      "priority": 0
+    }
+  ],
+  "queues": [
+    {
+      "name": "taxi.1",
+      "vhost": "cc-dev-vhost",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "taxi-dlx",
+        "x-message-ttl": 604800000
+      }
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "taxi",
+      "vhost": "cc-dev-vhost",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "general_anouncement",
+      "vhost": "cc-dev-vhost",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "general_anouncement",
+      "vhost": "cc-dev-vhost",
+      "destination": "taxi.1",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "taxi",
+      "vhost": "cc-dev-vhost",
+      "destination": "taxi.1",
+      "destination_type": "queue",
+      "routing_key": "taxi.1",
+      "arguments": {}
+    }
+  ]
 }
