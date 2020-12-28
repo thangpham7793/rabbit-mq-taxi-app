@@ -20,7 +20,7 @@ export async function orderTaxiDirect({
   exchange,
 }: OrderTaxiDirectProp) {
   // re-declare to make sure queue exists (idempotent action)
-  const taxiQueue = (await declareQueue({ channel, taxiName: queue.queue }))
+  const taxiQueue = (await declareQueue({ channel, queueName: queue.queue }))
     .queue
 
   // server-push to reduce load as opposed to front-end polling

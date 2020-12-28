@@ -10,36 +10,39 @@ import { orderTaxiByTopic, orderTaxiDirect } from "./publisher"
 import { appConfig } from "../../config"
 import { getExchange } from "./getExchange"
 import { ExchangeTypes } from "./types.dt"
-import { declareQueue } from "./declareQueue"
 
 async function main() {
   const channel = await getChannel(appConfig.rabbitmqURI)
-  const taxis = ["taxi-1"]
   const fanoutExchange = await getExchange({
     channel,
     name: "general_anouncement",
     type: ExchangeTypes.FANOUT,
   })
+  const policy = { messageTtl: 604800000, deadLetterExchange: "taxi-dlx" }
 
-  taxis.forEach((taxiName) =>
-    declareQueue({ channel, taxiName }).then(
-      (queue: amqp.Replies.AssertQueue) => {
+  const taxis = ["taxi.1"]
+  taxis.forEach((queueName) =>
+    channel
+      .assertQueue(queueName, {
+        durable: true,
+        autoDelete: false,
+        ...policy,
+      })
+      .then((queue: amqp.Replies.AssertQueue) => {
         console.log(`Created queue ${queue.queue}`)
         taxiSubscribeFanout({
           channel,
           exchange: fanoutExchange,
           queue,
+        }).then(() => {
+          channel.publish(
+            fanoutExchange.exchange,
+            "",
+            Buffer.from("Hello from CC Headquarter!")
+          )
         })
-      }
-    )
+      })
   )
-  ;(function () {
-    channel.publish(
-      fanoutExchange.exchange,
-      "",
-      Buffer.from("Hello from CC Headquarter!")
-    )
-  })()
 
   const directExchange = await getExchange({
     channel,
@@ -48,7 +51,13 @@ async function main() {
   })
 
   const directQueues = await Promise.all(
-    taxis.map((taxiName) => declareQueue({ channel, taxiName }))
+    taxis.map((queueName) =>
+      channel.assertQueue(queueName, {
+        durable: true,
+        autoDelete: false,
+        ...policy,
+      })
+    )
   )
 
   await Promise.all(
@@ -78,7 +87,13 @@ async function main() {
   })
 
   const ecoTopicQueues = await Promise.all(
-    taxis.map((taxiName) => declareQueue({ channel, taxiName }))
+    taxis.map((queueName) =>
+      channel.assertQueue(queueName, {
+        durable: true,
+        autoDelete: false,
+        ...policy,
+      })
+    )
   )
 
   await Promise.all(
@@ -101,7 +116,27 @@ async function main() {
     })
   )
 
-  await channel.unbindQueue("taxi-1", fanoutExchange.exchange, "")
+  // dead-letter-exchange and queue for expired messages
+  const DLQ = "taxi-dlq"
+  const DLX = "taxi-dlx"
+  const deadLetterExchange = await getExchange({
+    channel,
+    name: DLX,
+    type: ExchangeTypes.FANOUT,
+  })
+
+  channel
+    .assertQueue(DLQ, {
+      durable: true,
+      autoDelete: false,
+    })
+    .then((queue: amqp.Replies.AssertQueue) =>
+      taxiSubscribeFanout({
+        channel,
+        queue,
+        exchange: deadLetterExchange,
+      })
+    )
 }
 
 main().catch((error: NodeJS.ErrnoException) => console.error(error.message))
