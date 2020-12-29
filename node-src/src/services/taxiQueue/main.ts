@@ -19,7 +19,7 @@ async function main() {
     name: "general_anouncement",
     type: ExchangeTypes.FANOUT,
   })
-  const DLQ = "dlq"
+  const DLQ = "taxi-dlq"
   const DLX = "taxi-dlx"
   const policy = { messageTtl: 604800000, deadLetterExchange: DLX }
 
@@ -138,6 +138,40 @@ async function main() {
         exchange: deadLetterExchange,
       })
     )
+
+  // delayed queue (such as for a survey at the end of a trip)
+  const DELAYED_QUEUE = "work.later"
+  const DESTINATION_QUEUE = "work.now"
+  const delayPolicy = {
+    messageTtl: 30000,
+    deadLetterExchange: "",
+    deadLetterRoutingKey: DESTINATION_QUEUE,
+  }
+  const delayedQueue = await channel.assertQueue(DELAYED_QUEUE, {
+    ...delayPolicy,
+  })
+  const destinationQueue = await channel.assertQueue(DESTINATION_QUEUE, {
+    durable: true,
+  })
+  await channel.consume(
+    destinationQueue.queue,
+    (msg: amqp.ConsumeMessage | null) => {
+      if (!msg) return
+      try {
+        console.log(
+          `Received delayed message: ${msg?.content} at ${Date.now()}`
+        )
+        channel.ack(msg)
+      } catch (error) {
+        console.error(error)
+        channel.nack(msg)
+      }
+    }
+  )
+  channel.sendToQueue(
+    delayedQueue.queue,
+    Buffer.from(`Delayed message sent at ${Date.now()}`)
+  )
 }
 
 main().catch((error: NodeJS.ErrnoException) => console.error(error.message))
