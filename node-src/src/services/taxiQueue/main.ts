@@ -13,12 +13,13 @@ import { ExchangeTypes } from "./types.dt"
 
 async function main() {
   const channel = await getChannel(appConfig.rabbitmqURI)
+  channel.on("error", (err) => console.error(err))
   const fanoutExchange = await getExchange({
     channel,
     name: "general_anouncement",
     type: ExchangeTypes.FANOUT,
   })
-  const DLQ = "taxi-dlq"
+  const DLQ = "dlq"
   const DLX = "taxi-dlx"
   const policy = { messageTtl: 604800000, deadLetterExchange: DLX }
 

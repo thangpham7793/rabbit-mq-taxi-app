@@ -1,6 +1,5 @@
 import { Buffer } from "buffer"
 import { v4 as uuidv4 } from "uuid"
-import { declareQueue } from "./declareQueue"
 import { OrderTaxiByTopicProp, OrderTaxiDirectProp } from "./types.dt"
 class OrderTaxiMessage {
   constructor(public message: string) {
@@ -19,17 +18,13 @@ export async function orderTaxiDirect({
   queue,
   exchange,
 }: OrderTaxiDirectProp) {
-  // re-declare to make sure queue exists (idempotent action)
-  const taxiQueue = (await declareQueue({ channel, queueName: queue.queue }))
-    .queue
-
   // server-push to reduce load as opposed to front-end polling
   const isPublished = channel.publish(
     exchange.exchange,
-    taxiQueue,
+    queue.queue,
     Buffer.from(
       new OrderTaxiMessage(
-        `Sending to taxi ${taxiQueue} from exchange ${exchange.exchange}`
+        `Sending to taxi ${queue.queue} from exchange ${exchange.exchange}`
       ).toString()
     ),
     { messageId: uuidv4(), persistent: true }
